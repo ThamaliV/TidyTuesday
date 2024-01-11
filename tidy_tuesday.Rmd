@@ -74,7 +74,6 @@ state_count
 
 ```{r viz 1}
 
-
 # Visualization 01 
 
 plot_a <- ditch_nhl %>%
