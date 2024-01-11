@@ -1,0 +1,188 @@
+---
+title: "tidytuesday"
+author: "Thamali Vidanage"
+date: "2024-01-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r loading the pacakges}
+library(tidyverse)
+library(janitor)
+library(tidytuesdayR)
+library(viridis)
+library(dplyr)
+library(ggplot2)
+
+
+
+
+```
+
+```{r loading tidytuesday data}
+tuesdata <- tidytuesdayR::tt_load('2024-01-09')
+
+```
+
+
+
+
+
+
+```{r data wrangling}
+# Loading required data set
+
+nhl_rosters <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-09/nhl_rosters.csv')
+```
+
+
+
+
+```{r filtering data}
+
+# Filter the CAN data
+
+ditch_nhl <-  nhl_rosters %>%
+  select(player_id,weight_in_kilograms, height_in_inches,position_type, birth_city, birth_state_province, birth_country)%>%
+  filter( birth_country == "CAN")
+
+ditch_nhl
+
+
+
+
+```
+
+```{r counting states}
+
+# Get a count of states
+state_count <- ditch_nhl %>%
+              group_by(birth_state_province)%>%
+              count()
+
+state_count
+```
+
+
+
+
+
+```{r viz 1}
+
+
+# Visualization 01 
+
+plot_a <- ditch_nhl %>%
+          ggplot()+
+          scale_color_viridis (discrete = TRUE)+        #using viridis as the color pallete
+          facet_wrap(~ position_type, labeller = as_labeller(c(defensemen = "Defensemen", 
+                                      forwards = "Forwards", goalies= "Goalies")))+   #rearranging the panel labels
+          
+          geom_boxplot(aes(x= birth_state_province, y= weight_in_kilograms, fill= birth_state_province ) , na.rm= TRUE )+
+          scale_fill_viridis( discrete= TRUE)+
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+          
+          labs(title= " Weight distribution of Canadian NHL players with their position type",
+              subtitle= "Forwards and Goalies are likely having less weights than the defensemen", 
+                  x= "Birth state", y= "Weight (kg)") + 
+          
+  theme(
+          
+    panel.background = element_rect(fill = "white",
+                                    colour = "white",
+                                    size = 0.35, linetype = 1),
+    panel.grid = element_line(colour = "grey60"), 
+    panel.grid.minor = element_line(size = rel(0.25)),
+    panel.grid.major = element_line(size= rel(0.25)),
+    panel.border = element_rect(colour = "black", fill = NA),
+    
+    
+    legend.position = "NULL",
+    axis.text= element_text(size=7, color= "black"),
+    axis.title=element_text(size=9,face="bold"),
+     
+                         
+    plot.caption =  element_text(
+                    size=9, color="black", face="italic"),
+    plot.title = element_text(face= "bold"),
+          plot.margin= margin(1.75,0.5,0.2,0.5, "cm"),
+    
+    plot.background = element_rect(
+      fill = "grey76",
+      colour = "black"))+
+      labs(caption = c("Source: Satastics Canada" 
+                       ))
+
+  
+          
+          
+plot_a
+
+```
+
+
+```{r saving the plot a}
+ggsave(here("figures", "plot_a.pdf"),plot_a,
+       width= 190, height=120, units= "mm")
+```
+
+
+```{r viz 2}
+
+plot_b <- ditch_nhl %>%
+          ggplot()+
+          scale_color_viridis (discrete = TRUE)+
+           facet_wrap(~ position_type,
+                      labeller = as_labeller(c(defensemen = "Defensemen",
+                                      forwards = "Forwards", goalies= "Goalies")))+
+          
+          geom_boxplot(aes(x= birth_state_province, y= height_in_inches, fill= birth_state_province ) , na.rm= TRUE )+
+          scale_fill_viridis( discrete= TRUE)+
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+          
+          labs(title= " Height distribution of Canadian NHL players with their position type",                                      subtitle= "Defensemen are much heigher than forwards and goalies. In Nova Scotia, the heights of the goalies are considerably low.  ", 
+                  x= "Birth state", y= "Height (Inches)") + 
+  theme(
+          
+    panel.background = element_rect(fill = "white",
+                                    colour = "white",
+                                    size = 0.35, linetype = 1),
+    panel.grid = element_line(colour = "grey60"), 
+    panel.grid.minor = element_line(size = rel(0.25)),
+    panel.grid.major = element_line(size= rel(0.25)),
+    panel.border = element_rect(colour = "black", fill = NA),
+    
+    
+    legend.position = "NULL",
+    axis.text= element_text(size=7, color= "black"),
+    axis.title=element_text(size=9,face="bold"),
+                              
+    plot.caption = element_text(
+                    size=9, color="black", face="italic"),
+    plot.title = element_text(face= "bold"),
+          plot.margin= margin(1.75,0.5,0.2,0.5, "cm"),
+    
+    plot.background = element_rect(
+      fill = "grey76",
+      colour = "black"))+
+  labs(caption = c("Source: Satastics Canada" 
+                       ))
+          
+          
+plot_b
+```
+
+
+
+
+
+```{r saving the plot b}
+ggsave(here("figures", "plot_b.pdf"),plot_b,
+       width= 190, height=120, units= "mm")
+```
+
